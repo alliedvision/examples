@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="MainDialog">
+    <file>ZoomReset.png</file>
+    <file alias="AlliedVision.png">./AlliedVision.png</file>
+    <file alias="ZoomOut.png">./ZoomOut.png</file>
+    <file alias="ZoomIn.png">./ZoomIn.png</file>
+    <file alias="FitScreen.png">./FitScreen.png</file>
+  </qresource>
+</RCC>
