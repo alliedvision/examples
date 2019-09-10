@@ -106,98 +106,81 @@ void ImageConverter::NewBufferAvailable()
         m_ImagePool.push_front(pImage);
         return;
     }
-    
+
     pImage->m_nWidth = pBuffer->GetWidth();
     pImage->m_nHeight = pBuffer->GetHeight();
     pImage->m_nPixelFormat = pBuffer->GetPixelFormat();	
-    
+
+    bool bFormatIsSuppored = true;
+    size_t nBytesPerPixel = 0;
+    QImage::Format eQtFormat = QImage::Format_Invalid;
+
     //Currently this demo application only supports RGB24 and XBGR32
     switch(pBuffer->GetPixelFormat())
     {
     case V4L2_PIX_FMT_RGB24:
         {
-            //We create a new QImage if the image dimensions or pixel format doesn't match
-            if(     (pImage->m_Image.width() != (int)pBuffer->GetWidth())
-                ||  (pImage->m_Image.height() != (int)pBuffer->GetHeight())
-                ||  (pImage->m_Image.format() != QImage::Format_RGB888))
-            {
-                pImage->m_Image = QImage((int)pBuffer->GetWidth(), (int)pBuffer->GetHeight(), QImage::Format_RGB888);
-            }
-            
-            //Now we copy the buffer data into the image. If the line pitch (bytes per line) is equal
-            //we can copy as one block. Otherwise we have to copy line per line.
-            if((int)(pBuffer->GetWidth() * 3) == pImage->m_Image.bytesPerLine())
-            {
-                memcpy(pImage->m_Image.bits(), pBuffer->GetData(), (size_t)(pBuffer->GetWidth() * pBuffer->GetHeight() * 3));
-            }
-            else
-            {
-                int nWidth = (int)pBuffer->GetWidth();
-                int nHeight = (int)pBuffer->GetHeight();
-                size_t nLineSize = (size_t)(nWidth * 3);
-                char *pInput = (char*)pBuffer->GetData();
-                char *pOutput = (char*)pImage->m_Image.bits();
-                size_t nLinePitchInput = (size_t)(nLineSize);
-                size_t nLinePitchOutput = (size_t)(pImage->m_Image.bytesPerLine());
-                for(int i = 0; i < nHeight; i++)
-                {
-                    memcpy(pOutput, pInput, nLineSize);
-                    pInput += nLinePitchInput;
-                    pOutput += nLinePitchOutput;
-                }
-            }
-
-            //Create QPixmap from image
-            pImage->m_Pixmap = QPixmap::fromImage(pImage->m_Image);
-            //Remember that we converted the image
-            pImage->m_bConverted = true;
+            eQtFormat = QImage::Format_RGB888;
+            nBytesPerPixel = 3;
         }
         break;
+
     case V4L2_PIX_FMT_XBGR32:
         {
-            //We create a new QImage if the image dimensions or pixel format doesn't match
-            if(     (pImage->m_Image.width() != (int)pBuffer->GetWidth())
-                ||  (pImage->m_Image.height() != (int)pBuffer->GetHeight())
-                ||  (pImage->m_Image.format() != QImage::Format_RGB32))
-            {
-                pImage->m_Image = QImage((int)pBuffer->GetWidth(), (int)pBuffer->GetHeight(), QImage::Format_RGB32);
-            }
-
-            //Now we copy the buffer data into the image. If the line pitch (bytes per line) is equal
-            //we can copy as one block. Otherwise we have to copy line per line.
-            if((int)(pBuffer->GetWidth() * 4) == pImage->m_Image.bytesPerLine())
-            {
-                memcpy(pImage->m_Image.bits(), pBuffer->GetData(), (size_t)(pBuffer->GetWidth() * pBuffer->GetHeight() * 4));
-            }
-            else
-            {
-                int nWidth = (int)pBuffer->GetWidth();
-                int nHeight = (int)pBuffer->GetHeight();
-                size_t nLineSize = (size_t)(nWidth * 4);
-                char *pInput = (char*)pBuffer->GetData();
-                char *pOutput = (char*)pImage->m_Image.bits();
-                size_t nLinePitchInput = (size_t)(nLineSize);
-                size_t nLinePitchOutput = (size_t)(pImage->m_Image.bytesPerLine());
-                for(int i = 0; i < nHeight; i++)
-                {
-                    memcpy(pOutput, pInput, nLineSize);
-                    pInput += nLinePitchInput;
-                    pOutput += nLinePitchOutput;
-                }
-            }
-
-            //Create QPixmap from image
-            pImage->m_Pixmap = QPixmap::fromImage(pImage->m_Image);
-            //Remember that we converted the image
-            pImage->m_bConverted = true;
-
+            eQtFormat = QImage::Format_RGB32;
+            nBytesPerPixel = 4;
         }
         break;
 
     default:
+        {
+            bFormatIsSuppored = false;
+        }
+        break;
+    }
+
+    if(bFormatIsSuppored)
+    {
+        //We create a new QImage if the image dimensions or pixel format doesn't match
+        if(     (pImage->m_Image.width() != (int)pBuffer->GetWidth())
+            ||  (pImage->m_Image.height() != (int)pBuffer->GetHeight())
+            ||  (pImage->m_Image.format() != eQtFormat))
+        {
+            pImage->m_Image = QImage((int)pBuffer->GetWidth(), (int)pBuffer->GetHeight(), eQtFormat);
+        }
+
+        //Now we copy the buffer data into the image. If the line pitch (bytes per line) is equal
+        //we can copy as one block. Otherwise we have to copy line per line.
+        if((int)(pBuffer->GetWidth() * nBytesPerPixel) == pImage->m_Image.bytesPerLine())
+        {
+            memcpy(pImage->m_Image.bits(), pBuffer->GetData(), (size_t)(pBuffer->GetWidth() * pBuffer->GetHeight() * nBytesPerPixel));
+        }
+        else
+        {
+            int nWidth = (int)pBuffer->GetWidth();
+            int nHeight = (int)pBuffer->GetHeight();
+            size_t nLineSize = (size_t)(nWidth * nBytesPerPixel);
+            char *pInput = (char*)pBuffer->GetData();
+            char *pOutput = (char*)pImage->m_Image.bits();
+            size_t nLinePitchInput = (size_t)(nLineSize);
+            size_t nLinePitchOutput = (size_t)(pImage->m_Image.bytesPerLine());
+            for(int i = 0; i < nHeight; i++)
+            {
+                memcpy(pOutput, pInput, nLineSize);
+                pInput += nLinePitchInput;
+                pOutput += nLinePitchOutput;
+            }
+        }
+
+        //Create QPixmap from image
+        pImage->m_Pixmap = QPixmap::fromImage(pImage->m_Image);
+        //Remember that we converted the image
+        pImage->m_bConverted = true;
+    }
+    else
+    {
         //We will report to GUI if pixel format of the buffer could not be converted
         pImage->m_bConverted = false;
-        break;
     }
 
     //Notify the GUI about the new image
