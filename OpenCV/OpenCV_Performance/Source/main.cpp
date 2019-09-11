@@ -229,9 +229,11 @@ int main(int argc, char *argv[])
         }
         
         //Create a list of pixel formats supported by this application.
-        //Currently we only support RGB24.
+        //Currently we only support RGB24 and XBGR32.
         std::set<__u32> supportedPixelFormats;
         supportedPixelFormats.insert(V4L2_PIX_FMT_RGB24);
+        supportedPixelFormats.insert(V4L2_PIX_FMT_XBGR32);
+        
         
         //Create camera. This will also open the V4L2 device, initialize it and start streaming.
         //The camera object will be deleted if it goes out of scope which will also stop streaming
