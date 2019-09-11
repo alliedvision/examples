@@ -40,38 +40,37 @@ MainWindow::MainWindow(QSharedPointer<Camera> pCamera, QObject *pParent)
     {
         throw std::runtime_error("No camera passed");
     }
-    
-    //Connect camera signal so that we get notified if a new buffer is ready
+
+    // Connect camera signal so that we get notified if a new buffer is ready
     connect(    m_pCamera.data(), SIGNAL(NewBufferAvailable()),
                 this, SLOT(NewBufferAvailable()),
                 Qt::QueuedConnection);
-        
 
-    //Check if a buffer was already available befor connection of the signal
+
+    // Check if a buffer was already available befor connection of the signal
     if(m_pCamera->IsBufferAvailable())
     {
         NewBufferAvailable();
-    }    
+    }
 }
 
 QImage Mat2QImage(cv::Mat const& src, const QImage::Format eQtFormat )
 {
-     //return QImage((uchar*)src.data, src.cols, src.rows, src.step, QImage::Format_RGB888);
     return QImage((uchar*)src.data, src.cols, src.rows, src.step, eQtFormat);
 }
 
 void MainWindow::NewBufferAvailable()
 {
-    //Now we try to get the new buffer from the camera
+    // Now we try to get the new buffer from the camera
     QSharedPointer<Buffer> pBuffer = m_pCamera->GetNewBuffer();
     if(NULL == pBuffer)
     {
         return;
     }
-    
+
     m_pCamera->GetStatus(&m_streaming, &m_frameCounter, &m_frameRate);
     QString fpsLabel = QString("%1 fps").arg(m_frameRate, 0, 'f', 2);
-    
+
     // Determine matching Qt image format and cv array type
     QImage::Format eQtFormat = QImage::Format_Invalid;
     int nCvArrayType = 0;

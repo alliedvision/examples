@@ -39,7 +39,7 @@
 
 #define DEFAULT_BUFFER_COUNT 5
 
-//Helper function to print out how to use the program
+// Helper function to print out how to use the program
 void PrintHelp(const char *pApplicatioName)
 {
     std::cout << "Usage: " << pApplicatioName << " [options]\n";
@@ -55,7 +55,7 @@ void PrintHelp(const char *pApplicatioName)
     std::cout << "-h | --height        Height for crop\n";
 }
 
-// catch signals SIGINT and SIGTERM to shutdown gracefully
+// Catch signals SIGINT and SIGTERM to shutdown gracefully
 void handleShutDownSignal(int signalId)
 {
     std::cout << "Shutting down..." << std::endl;
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     sigaction(SIGINT, &sigIntHandler, NULL);
     sigaction(SIGTERM, &sigIntHandler, NULL);
     
-    //Initialize Qt application
+    // Initialize Qt application
     QApplication application(argc, argv);
     application.setApplicationName(QObject::tr(APPLICATION_PRODUCT_NAME));
     application.setApplicationVersion(APPLICATION_VERSION);
@@ -80,14 +80,14 @@ int main(int argc, char *argv[])
     int nResult = -1;
     try
     {
-        //Print out application name and version
+        // Print out application name and version
         std::cout << "////////////////////////////////////////////\n";
         std::cout << "/// " << APPLICATION_PRODUCT_NAME << " - Version " << APPLICATION_VERSION << "\n";
 	std::cout << "/// OpenCV - Version " << CV_VERSION_MAJOR << "." << CV_VERSION_MINOR << "." << CV_VERSION_REVISION << "\n";
         std::cout << "////////////////////////////////////////////\n";
         std::cout << "\n";
         
-        //Parse command line arguments
+        // Parse command line arguments
         char short_options[] = "d:mub:l:t:w:h:";
         option long_options[] =
         {
@@ -228,16 +228,16 @@ int main(int argc, char *argv[])
             throw std::runtime_error("No device specified.");
         }
         
-        //Create a list of pixel formats supported by this application.
-        //Currently we only support RGB24 and XBGR32.
+        // Create a list of pixel formats supported by this application.
+        // Currently we only support RGB24 and XBGR32.
         std::set<__u32> supportedPixelFormats;
         supportedPixelFormats.insert(V4L2_PIX_FMT_RGB24);
         supportedPixelFormats.insert(V4L2_PIX_FMT_XBGR32);
-        
-        
-        //Create camera. This will also open the V4L2 device, initialize it and start streaming.
-        //The camera object will be deleted if it goes out of scope which will also stop streaming
-        //close the device and perform cleanup.
+
+
+        // Create camera. This will also open the V4L2 device, initialize it and start streaming.
+        // The camera object will be deleted if it goes out of scope which will also stop streaming
+        // close the device and perform cleanup.
         QSharedPointer<Camera> pCamera = Camera::New(strDeviceName, eIOMethod, nBufferCount, supportedPixelFormats, crop);
 
         //Setup user interface for image display
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
     }
     catch(const std::exception &rException)
     {
-        //Print out error message
+        // Print out error message
         std::cerr << "Error: " << rException.what() << "\n";
         std::cerr << "\n";
         PrintHelp(argv[0]);
@@ -254,12 +254,12 @@ int main(int argc, char *argv[])
     }
     catch(...)
     {
-        //Print out error message
+        // Print out error message
         std::cerr << "Error: Unknown error while starting application.\n\n";
         std::cerr << "\n";
         PrintHelp(argv[0]);
         nResult = -1;
     }
-    
+
     return nResult;
 }
