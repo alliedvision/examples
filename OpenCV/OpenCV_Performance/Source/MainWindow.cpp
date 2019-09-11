@@ -72,23 +72,36 @@ void MainWindow::NewBufferAvailable()
     m_pCamera->GetStatus(&m_streaming, &m_frameCounter, &m_frameRate);
     QString fpsLabel = QString("%1 fps").arg(m_frameRate, 0, 'f', 2);
     
-    // Create an OpenCV Mat object from the buffer
-    cv::Mat image((int)pBuffer->GetHeight(), (int)pBuffer->GetWidth(), CV_8UC4, pBuffer->GetData(), (size_t)pBuffer->GetBytesPerLine());
-    
-    // Resize
-    cv::resize(image, image, cv::Size(640, 480), 0, 0, cv::INTER_NEAREST);
-    
-    // Add text overlay
-    cv::putText(image, fpsLabel.toStdString(), cv::Point(32,32), cv::FONT_HERSHEY_COMPLEX, 1.0, cv::Scalar(200,200,250), 1);
-    
-    // Determine matching Qt image format
+    // Determine matching Qt image format and cv array type
     QImage::Format eQtFormat = QImage::Format_Invalid;
+    int nCvArrayType = 0;
     switch(pBuffer->GetPixelFormat())
     {
-        case V4L2_PIX_FMT_RGB24: eQtFormat = QImage::Format_RGB888; break;
-        case V4L2_PIX_FMT_XBGR32: eQtFormat = QImage::Format_RGB32; break;
+        case V4L2_PIX_FMT_RGB24:
+        {
+            eQtFormat = QImage::Format_RGB888;
+            nCvArrayType = CV_8UC3;
+        }
+        break;
+
+        case V4L2_PIX_FMT_XBGR32:
+        {
+            eQtFormat = QImage::Format_RGB32;
+            nCvArrayType = CV_8UC4;
+        }
+        break;
+
         default: throw std::runtime_error("Unsupported pixel format");
     }
+
+    // Create an OpenCV Mat object from the buffer
+    cv::Mat image((int)pBuffer->GetHeight(), (int)pBuffer->GetWidth(), nCvArrayType, pBuffer->GetData(), (size_t)pBuffer->GetBytesPerLine());
+
+    // Resize
+    cv::resize(image, image, cv::Size(640, 480), 0, 0, cv::INTER_NEAREST);
+
+    // Add text overlay
+    cv::putText(image, fpsLabel.toStdString(), cv::Point(32,32), cv::FONT_HERSHEY_COMPLEX, 1.0, cv::Scalar(200,200,250), 1);
 
     // Display
     m_label.setPixmap(QPixmap::fromImage(Mat2QImage(image, eQtFormat)));
