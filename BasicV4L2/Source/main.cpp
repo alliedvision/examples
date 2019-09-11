@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
         }
         
         //Create a list of pixel formats supported by this application.
-        //Currently we only support RGB24.
+        //Currently we only support RGB24 and XBGR32.
         std::set<__u32> supportedPixelFormats;
         supportedPixelFormats.insert(V4L2_PIX_FMT_RGB24);
         supportedPixelFormats.insert(V4L2_PIX_FMT_XBGR32);
