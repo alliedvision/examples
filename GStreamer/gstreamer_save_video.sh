@@ -69,7 +69,7 @@ fi
 echo "Using device" $DEVICE
 echo -e "Stop capture by hitting Ctrl+C once. Please wait until gstreamer command is completed.\n"
 
-if ! gst-launch-1.0 $VIDEOSRC device=$DEVICE ! videoscale ! videoconvert ! video/x-raw,width=800,height=600,format=RGB ! videoconvert ! videorate ! video/x-raw,framerate=30/1 ! x264enc ! avimux ! filesink location="$OUTPUT" -e
+if ! gst-launch-1.0 -v $VIDEOSRC device=$DEVICE ! videoscale ! videoconvert ! video/x-raw,width=800,height=600,format=RGB ! videoconvert ! videorate ! video/x-raw,framerate=30/1 ! x264enc ! avimux ! filesink location="$OUTPUT" -e
 then
     echo -e "\nFailed to launch gstreamer. Is the right device specified?"
 fi

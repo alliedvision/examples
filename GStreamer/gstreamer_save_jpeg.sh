@@ -75,7 +75,7 @@ fi
 echo "Using device" $DEVICE
 echo "Output file" $OUTPUT
 
-if ! gst-launch-1.0 $VIDEOSRC device=$DEVICE num-buffers=1 ! queue ! video/x-raw,format=RGB ! jpegenc ! filesink location=$OUTPUT
+if ! gst-launch-1.0 $VIDEOSRC device=$DEVICE num-buffers=1 ! queue ! video/x-raw,format=BGRx ! jpegenc ! filesink location=$OUTPUT
 then
    echo -e "\nFailed to launch gstreamer. Is the right device specified?"
 fi
