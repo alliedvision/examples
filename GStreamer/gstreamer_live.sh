@@ -6,7 +6,7 @@
 
 DEVICE=0
 VIDEOSRC=v4l2src
-VIDEOSINK=autovideosink
+VIDEOSINK=ximagesink
 
 # ========================================================= 
 # Usage function
@@ -59,7 +59,7 @@ if [ "$DEVICE" = 0 ]; then
 fi
 
 echo "Using device" $DEVICE
-if ! gst-launch-1.0 $VIDEOSRC device=$DEVICE ! videoscale ! videoconvert ! video/x-raw,width=800,height=600,format=RGB ! videoconvert ! $VIDEOSINK
+if ! gst-launch-1.0 $VIDEOSRC device=$DEVICE ! video/x-raw, format=BGRx ! videoscale ! video/x-raw,width=500,height=375 ! videoconvert ! $VIDEOSINK
 then
     echo -e "\nFailed to launch gstreamer. Is the right device specified?"
 fi
