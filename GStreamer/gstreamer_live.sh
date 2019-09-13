@@ -7,14 +7,24 @@
 DEVICE=0
 VIDEOSRC=v4l2src
 VIDEOSINK=ximagesink
+BOARD=0
+PIPELINE="echo -e \"Pipeline not defined.\""
 
+NITROGEN=nitrogen
+NVIDIA=nvidia
+WANDBOARD=wandboard
 # ========================================================= 
 # Usage function
 # ========================================================= 
 
 usage() {
-    echo -e "Usage: ./gstreamer_live.sh -d <device>\n"
+    echo -e "Usage: ./gstreamer_live.sh -d <device> -b <board>\n"
 	echo -e "Options:"	
+    echo -e "-b, --board    Currently used board. e.g. -b $NVIDIA"
+    echo -e "               Options:"
+    echo -e "                   $NITROGEN  for Nitrogen  boards"
+    echo -e "                   $NVIDIA    for NVIDIA    boards"
+    echo -e "                   $WANDBOARD for Wandboard boards"
     echo -e "-d, --device   Device to use. e.g. -d /dev/video3"
 	echo -e "-h, --help     Display help"
 }
@@ -29,6 +39,11 @@ do
     key="$1"
 
     case $key in
+        -b|--board)
+            BOARD="$2"
+            shift
+            shift
+            ;;
         -d|--device)
             DEVICE="$2"
             shift
@@ -58,8 +73,27 @@ if [ "$DEVICE" = 0 ]; then
     exit 1
 fi
 
+if [ "$BOARD" = 0 ]; then
+    echo -e "No board specified. Exit.\n"
+    usage
+    exit 1
+fi
+
+if ! [[ "$BOARD" =~ ^($NITROGEN|$NVIDIA|$WANDBOARD)$ ]]; then
+    echo -e "Unsupported board specified. Exit.\n"
+    usage
+    exit 1
+fi
+
 echo "Using device" $DEVICE
-if ! gst-launch-1.0 $VIDEOSRC device=$DEVICE ! video/x-raw, format=BGRx ! videoscale ! video/x-raw,width=500,height=375 ! videoconvert ! $VIDEOSINK
-then
+echo "Using board" $BOARD
+
+if [ "$BOARD" = "$NVIDIA" ]; then
+    PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! video/x-raw, format=BGRx ! videoscale ! video/x-raw,width=500,height=375 ! videoconvert ! $VIDEOSINK"
+else
+    PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! videoscale ! videoconvert ! video/x-raw,width=500,height=375,format=RGB ! videoconvert ! $VIDEOSINK"
+fi
+
+if ! eval "$PIPELINE"; then
     echo -e "\nFailed to launch gstreamer. Is the right device specified?"
 fi
