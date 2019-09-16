@@ -151,7 +151,7 @@ void ImageConverter::NewBufferAvailable()
 
         //Now we copy the buffer data into the image. If the line pitch (bytes per line) is equal
         //we can copy as one block. Otherwise we have to copy line per line.
-        if((int)(pBuffer->GetWidth() * nBytesPerPixel) == pImage->m_Image.bytesPerLine())
+        if((int)(pBuffer->GetWidth()) * nBytesPerPixel == pBuffer->GetBytesPerLine())
         {
             memcpy(pImage->m_Image.bits(), pBuffer->GetData(), (size_t)(pBuffer->GetWidth() * pBuffer->GetHeight() * nBytesPerPixel));
         }
@@ -162,13 +162,13 @@ void ImageConverter::NewBufferAvailable()
             size_t nLineSize = (size_t)(nWidth * nBytesPerPixel);
             char *pInput = (char*)pBuffer->GetData();
             char *pOutput = (char*)pImage->m_Image.bits();
-            size_t nLinePitchInput = (size_t)(nLineSize);
-            size_t nLinePitchOutput = (size_t)(pImage->m_Image.bytesPerLine());
+            size_t nLinePitchOutput = (size_t)(nLineSize);
+            size_t nLinePitchInput = (size_t)(pBuffer->GetBytesPerLine());
             for(int i = 0; i < nHeight; i++)
             {
                 memcpy(pOutput, pInput, nLineSize);
-                pInput += nLinePitchInput;
                 pOutput += nLinePitchOutput;
+                pInput += nLinePitchInput;
             }
         }
 
