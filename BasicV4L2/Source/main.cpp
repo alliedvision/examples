@@ -33,7 +33,7 @@
 #include "Version.h"
 #include "Camera.h"
 
-#define DEFAULT_BUFFER_COUNT 3
+#define DEFAULT_BUFFER_COUNT 4
 
 //Helper function to print out how to use the program
 void PrintHelp(const char *pApplicatioName)
@@ -44,7 +44,7 @@ void PrintHelp(const char *pApplicatioName)
     std::cout << "-d | --device        Video device name\n";
     std::cout << "-m | --mmap          Use memory mapped buffers [default]\n";
     std::cout << "-u | --userp         Use application allocated buffers\n";
-    std::cout << "-b | --buff          Number of buffers [2.." << DEFAULT_BUFFER_COUNT << "]\n";
+    std::cout << "-b | --buff          Number of buffers ( > " << DEFAULT_BUFFER_COUNT-1 << " )\n";
     std::cout << "-l | --left          Left (X offset) for crop\n";
     std::cout << "-t | --top           Top (Y offset) for crop\n";
     std::cout << "-w | --width         Width for crop\n";
@@ -134,10 +134,10 @@ int main(int argc, char *argv[])
                     throw std::runtime_error("Buffer option used multiple times.");
                 }
                 nBufferCount = QString(optarg).toInt();
-                if(nBufferCount <= 0)
+                if(nBufferCount < DEFAULT_BUFFER_COUNT)
                 {
                     std::ostringstream stream;
-                    stream << "Number of buffers must at least be 1";
+                    stream << "Number of buffers must at least be " << DEFAULT_BUFFER_COUNT;
                     throw std::runtime_error(stream.str());
                 }
                 bBufferFound = true;

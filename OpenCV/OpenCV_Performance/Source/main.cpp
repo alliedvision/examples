@@ -153,10 +153,10 @@ int main(int argc, char *argv[])
                     throw std::runtime_error("Buffer option used multiple times.");
                 }
                 nBufferCount = QString(optarg).toInt();
-                if(nBufferCount <= 0)
+                if(nBufferCount < DEFAULT_BUFFER_COUNT)
                 {
                     std::ostringstream stream;
-                    stream << "Number of buffers must at least be 1";
+                    stream << "Number of buffers must at least be "<< DEFAULT_BUFFER_COUNT;
                     throw std::runtime_error(stream.str());
                 }
                 bBufferFound = true;
