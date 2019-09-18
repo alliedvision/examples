@@ -103,6 +103,6 @@ void MainWindow::NewBufferAvailable()
     cv::putText(image, fpsLabel.toStdString(), cv::Point(32,32), cv::FONT_HERSHEY_COMPLEX, 1.0, cv::Scalar(200,200,250), 1);
 
     // Display
-    m_label.setPixmap(QPixmap::fromImage(Mat2QImage(image, eQtFormat)));
+    m_label.setPixmap(QPixmap::fromImage(Mat2QImage(image, eQtFormat).copy()));
     m_label.show();
 }

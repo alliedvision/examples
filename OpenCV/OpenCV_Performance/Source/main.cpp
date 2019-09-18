@@ -37,7 +37,7 @@
 #include "Camera.h"
 #include <opencv2/core/version.hpp>
 
-#define DEFAULT_BUFFER_COUNT 5
+#define DEFAULT_BUFFER_COUNT 4
 
 // Helper function to print out how to use the program
 void PrintHelp(const char *pApplicatioName)
