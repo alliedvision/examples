@@ -94,6 +94,4 @@ else
     PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! videoscale ! videoconvert ! video/x-raw,width=500,height=375,format=RGB ! videoconvert ! $VIDEOSINK"
 fi
 
-if ! eval "$PIPELINE"; then
-    echo -e "\nFailed to launch gstreamer. Is the right device specified?"
-fi
+eval "$PIPELINE"
