@@ -156,9 +156,15 @@ Buffer::Buffer(size_t nSize, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nB
     {
         throw std::runtime_error("Invalid bytes per line passed");
     }
-
+    
+    if(m_nSize % 128)
+    {
+        m_nSize = ((m_nSize / 128) + 1) * 128;
+    }
+    
     //For userptr we need to allocate memory in the application
-    m_pData = new char[nSize];
+    m_pData = static_cast<char*>(aligned_alloc(128, m_nSize));
+    
     if(NULL == m_pData)
     {
         throw std::runtime_error("Could not allocate buffer memory");
@@ -792,14 +798,7 @@ void Camera::run()
                         memset(&buf, 0, sizeof(buf));
                         buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                         buf.memory = V4L2_MEMORY_USERPTR;
-                        if(-1 == xioctl(m_nFileDescriptor, VIDIOC_DQBUF, &buf))
-                        {
-                            if(EAGAIN != errno)
-                            {
-                                throw CreateException("Could not dequeue buffer");
-                            }
-                        }
-                        else
+                        if(0 == xioctl(m_nFileDescriptor, VIDIOC_DQBUF, &buf))
                         {
                             //If we were able to dequeue a buffer we try to find the according buffer object
                             std::map<void*, QSharedPointer<Buffer> >::iterator iterator = m_BuffersByPtr.find((void*)buf.m.userptr);

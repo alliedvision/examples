@@ -40,47 +40,69 @@ MainWindow::MainWindow(QSharedPointer<Camera> pCamera, QObject *pParent)
     {
         throw std::runtime_error("No camera passed");
     }
-    
-    //Connect camera signal so that we get notified if a new buffer is ready
+
+    // Connect camera signal so that we get notified if a new buffer is ready
     connect(    m_pCamera.data(), SIGNAL(NewBufferAvailable()),
                 this, SLOT(NewBufferAvailable()),
                 Qt::QueuedConnection);
-        
 
-    //Check if a buffer was already available befor connection of the signal
+
+    // Check if a buffer was already available befor connection of the signal
     if(m_pCamera->IsBufferAvailable())
     {
         NewBufferAvailable();
-    }    
+    }
 }
 
-QImage MatRGB2QImage(cv::Mat const& src)
+QImage Mat2QImage(cv::Mat const& src, const QImage::Format eQtFormat )
 {
-     return QImage((uchar*)src.data, src.cols, src.rows, src.step, QImage::Format_RGB888);
+    return QImage((uchar*)src.data, src.cols, src.rows, src.step, eQtFormat);
 }
 
 void MainWindow::NewBufferAvailable()
 {
-    //Now we try to get the new buffer from the camera
+    // Now we try to get the new buffer from the camera
     QSharedPointer<Buffer> pBuffer = m_pCamera->GetNewBuffer();
     if(NULL == pBuffer)
     {
         return;
     }
-    
+
     m_pCamera->GetStatus(&m_streaming, &m_frameCounter, &m_frameRate);
     QString fpsLabel = QString("%1 fps").arg(m_frameRate, 0, 'f', 2);
-    
+
+    // Determine matching Qt image format and cv array type
+    QImage::Format eQtFormat = QImage::Format_Invalid;
+    int nCvArrayType = 0;
+    switch(pBuffer->GetPixelFormat())
+    {
+        case V4L2_PIX_FMT_RGB24:
+        {
+            eQtFormat = QImage::Format_RGB888;
+            nCvArrayType = CV_8UC3;
+        }
+        break;
+
+        case V4L2_PIX_FMT_XBGR32:
+        {
+            eQtFormat = QImage::Format_RGB32;
+            nCvArrayType = CV_8UC4;
+        }
+        break;
+
+        default: throw std::runtime_error("Unsupported pixel format");
+    }
+
     // Create an OpenCV Mat object from the buffer
-    cv::Mat image((int)pBuffer->GetHeight(), (int)pBuffer->GetWidth(), CV_8UC3, pBuffer->GetData(), (size_t)pBuffer->GetBytesPerLine());
-    
+    cv::Mat image((int)pBuffer->GetHeight(), (int)pBuffer->GetWidth(), nCvArrayType, pBuffer->GetData(), (size_t)pBuffer->GetBytesPerLine());
+
     // Resize
     cv::resize(image, image, cv::Size(640, 480), 0, 0, cv::INTER_NEAREST);
-    
-    // add text overlay
+
+    // Add text overlay
     cv::putText(image, fpsLabel.toStdString(), cv::Point(32,32), cv::FONT_HERSHEY_COMPLEX, 1.0, cv::Scalar(200,200,250), 1);
-    
+
     // Display
-    m_label.setPixmap(QPixmap::fromImage(MatRGB2QImage(image)));
+    m_label.setPixmap(QPixmap::fromImage(Mat2QImage(image, eQtFormat).copy()));
     m_label.show();
 }
