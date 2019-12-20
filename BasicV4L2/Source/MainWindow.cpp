@@ -84,6 +84,8 @@ ImageConverter::ImageConverter(QSharedPointer<Camera> pCamera, QObject* pParent)
 //Slot for notification if a new buffer is available in the camera
 void ImageConverter::NewBufferAvailable()
 {
+    QMutexLocker locker(&m_Mutex);
+    
     //First we try to get an unused image from the pool
     QSharedPointer<Image> pImage;
     while(      (m_ImagePool.empty() == false)
@@ -184,7 +186,6 @@ void ImageConverter::NewBufferAvailable()
     }
 
     //Notify the GUI about the new image
-    QMutexLocker locker(&m_Mutex);
     if(NULL == m_pNextImage)
     {
         //Only notify the GUI if the previous frame was
