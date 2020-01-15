@@ -89,7 +89,7 @@ echo "Using device" $DEVICE
 echo "Using board" $BOARD
 
 if [ "$BOARD" = "$NVIDIA" ]; then
-    PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! video/x-raw, format=BGRx ! videoscale ! video/x-raw,width=500,height=375 ! videoconvert ! $VIDEOSINK"
+    PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! video/x-raw, format=BGRx ! $VIDEOSINK"
 else
     PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! videoscale ! videoconvert ! video/x-raw,width=500,height=375,format=RGB ! videoconvert ! $VIDEOSINK"
 fi
