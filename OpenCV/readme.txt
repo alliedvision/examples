@@ -1,6 +1,8 @@
 OpenCV examples using v4l2.
 OpenCV must be installed before building.
 
+WARNING: the OpenCV_Basic example does NOT work with Nvidia Boards.
+
 You can either build and install OpenCV from source with the script build_opencv.sh 
 or you may use the script install_opencv.sh to install OpenCV via the package manager.
 
