@@ -94,6 +94,7 @@ private:
     };
     int                                         m_nFileDescriptor;
     bool                                        m_bInitialized;
+    bool                                        m_bMplaneApi;
     IOMethod                                    m_eIOMethod;
     std::map<__u32, QSharedPointer<Buffer> >    m_BuffersByIndex;
     std::map<void*, QSharedPointer<Buffer> >    m_BuffersByPtr;

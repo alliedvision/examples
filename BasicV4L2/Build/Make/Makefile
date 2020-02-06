@@ -38,8 +38,8 @@ OBJ_FILES           = $(OBJ_DIR)/Camera.o \
 
 GEN_HEADERS			= $(OBJ_DIR)/ui_MainWindow.h
 
-DEPENDENCIES        = QtCore \
-		      QtGui
+#DEPENDENCIES        = QtCore \
+#		      QtGui
 
 $(OBJ_DIR)/moc_%.cpp: $(SOURCE_DIR)/%.h $(OBJ_DIR)
 	$(MOC) -o $@ $<

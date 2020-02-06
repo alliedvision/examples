@@ -390,8 +390,16 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         }
     }
     
-    if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
+    if (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)
     {
+        m_bMplaneApi = false;
+    }
+    else if(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE_MPLANE)
+    {
+        m_bMplaneApi = true;
+    }
+    else
+    {        
         throw std::runtime_error("Device is not a video capture device");
     }
     
