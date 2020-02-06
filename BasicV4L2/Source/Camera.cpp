@@ -548,14 +548,23 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         throw CreateException("Cannot get format from device");
     }
     
-    if (fmt.fmt.pix.pixelformat != nPixelformat)
-    {
-        throw CreateException("Could not set pixel format");
-    }
+    __u32 width = fmt.fmt.pix.width;
+    __u32 height =fmt.fmt.pix.height;
+    __u32 bytesperline = fmt.fmt.pix.bytesperline;
+    __u32 pixelformat = fmt.fmt.pix.pixelformat;
     
     if(m_bMplaneApi)
     {
         m_nNumPlanes = fmt.fmt.pix_mp.num_planes;
+        width = fmt.fmt.pix_mp.width;
+        height = fmt.fmt.pix_mp.height;
+        pixelformat = fmt.fmt.pix_mp.pixelformat;
+        bytesperline = fmt.fmt.pix_mp.plane_fmt[0].bytesperline;
+    }
+    
+    if (pixelformat != nPixelformat)
+    {
+        throw CreateException("Could not set pixel format");
     }
     
     //Request buffers from the device (either userptr or mmap)
@@ -628,15 +637,17 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
                 {
                     throw CreateException("Could not query buffer");
                 }
+                
+                std::cout << "bytesperline = " << bytesperline << std::endl;
 
                 QSharedPointer<Buffer> pBuffer(new Buffer(  &buf,
                                                             m_nFileDescriptor,
                                                             m_bMplaneApi,
                                                             i,
-                                                            fmt.fmt.pix.width,
-                                                            fmt.fmt.pix.height,
-                                                            fmt.fmt.pix.bytesperline,
-                                                            fmt.fmt.pix.pixelformat));
+                                                            width,
+                                                            height,
+                                                            bytesperline,
+                                                            pixelformat));
                 if(NULL == pBuffer)
                 {
                     throw CreateException("Could not allocate buffer");
@@ -653,10 +664,10 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
                 QSharedPointer<Buffer> pBuffer(new Buffer(  fmt.fmt.pix.sizeimage,
                                                             m_bMplaneApi,
                                                             i,
-                                                            fmt.fmt.pix.width,
-                                                            fmt.fmt.pix.height,
-                                                            fmt.fmt.pix.bytesperline,
-                                                            fmt.fmt.pix.pixelformat));
+                                                            width,
+                                                            height,
+                                                            bytesperline,
+                                                            pixelformat));
                 if(NULL == pBuffer)
                 {
                     throw CreateException("Could not allocate buffer");
