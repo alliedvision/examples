@@ -548,6 +548,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         throw CreateException("Cannot get format from device");
     }
     
+    __u32 sizeimage = fmt.fmt.pix.sizeimage;
     __u32 width = fmt.fmt.pix.width;
     __u32 height =fmt.fmt.pix.height;
     __u32 bytesperline = fmt.fmt.pix.bytesperline;
@@ -560,6 +561,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         height = fmt.fmt.pix_mp.height;
         pixelformat = fmt.fmt.pix_mp.pixelformat;
         bytesperline = fmt.fmt.pix_mp.plane_fmt[0].bytesperline;
+        sizeimage = fmt.fmt.pix_mp.plane_fmt[0].sizeimage;
     }
     
     if (pixelformat != nPixelformat)
@@ -638,8 +640,6 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
                     throw CreateException("Could not query buffer");
                 }
                 
-                std::cout << "bytesperline = " << bytesperline << std::endl;
-
                 QSharedPointer<Buffer> pBuffer(new Buffer(  &buf,
                                                             m_nFileDescriptor,
                                                             m_bMplaneApi,
@@ -661,7 +661,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         case IOMethod_UserPtr:
             for(__u32 i = 0; i < req.count; i++)
             {
-                QSharedPointer<Buffer> pBuffer(new Buffer(  fmt.fmt.pix.sizeimage,
+                QSharedPointer<Buffer> pBuffer(new Buffer(  sizeimage,
                                                             m_bMplaneApi,
                                                             i,
                                                             width,
