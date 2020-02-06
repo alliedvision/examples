@@ -87,10 +87,11 @@ std::string FourCCToString(__u32 nFourCC)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Constructor for MMAP buffer
-Buffer::Buffer(v4l2_buffer *pBuffer, int nFileDescriptor, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nBytesPerLine, __u32 nPixelFormat)
+Buffer::Buffer(v4l2_buffer *pBuffer, int nFileDescriptor, bool mplaneApi, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nBytesPerLine, __u32 nPixelFormat)
     :   m_pData(NULL)
     ,   m_nSize(0)
     ,   m_eIOMethod(IOMethod_MMAP)
+    ,   m_bMplaneApi(mplaneApi)
     ,   m_nIndex(nIndex)
     ,   m_nWidth(nWidth)
     ,   m_nHeight(nHeight)
@@ -119,21 +120,22 @@ Buffer::Buffer(v4l2_buffer *pBuffer, int nFileDescriptor, __u32 nIndex, __u32 nW
     }
     
     //For mmap we map the kernel memory into the application
-    void *pData = mmap(NULL, pBuffer->length, PROT_READ | PROT_WRITE, MAP_SHARED, nFileDescriptor, pBuffer->m.offset);
+    void *pData = mmap(NULL, m_bMplaneApi ? pBuffer->m.planes[0].length : pBuffer->length, PROT_READ | PROT_WRITE, MAP_SHARED, nFileDescriptor, m_bMplaneApi ? pBuffer->m.planes[0].m.mem_offset : pBuffer->m.offset);
     if (MAP_FAILED == pData)
     {
         throw CreateException("Could not map buffer into memory");
     }
     
     m_pData = (char*)pData;
-    m_nSize = (size_t)pBuffer->length;
+    m_nSize = m_bMplaneApi ? (size_t)pBuffer->m.planes[0].length : (size_t)pBuffer->length;
 }
 
 //Constructor for userptr buffer
-Buffer::Buffer(size_t nSize, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nBytesPerLine, __u32 nPixelFormat)
+Buffer::Buffer(size_t nSize, bool mplaneApi, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nBytesPerLine, __u32 nPixelFormat)
     :   m_pData(NULL)
     ,   m_nSize(nSize)
     ,   m_eIOMethod(IOMethod_UserPtr)
+    ,   m_bMplaneApi(mplaneApi)
     ,   m_nIndex(nIndex)
     ,   m_nWidth(nWidth)
     ,   m_nHeight(nHeight)
@@ -393,10 +395,12 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
     if (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)
     {
         m_bMplaneApi = false;
+        m_nV4L2BufType = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     }
     else if(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE_MPLANE)
     {
         m_bMplaneApi = true;
+        m_nV4L2BufType = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     }
     else
     {        
@@ -425,7 +429,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         v4l2_fmtdesc fmtdesc;
         memset(&fmtdesc, 0, sizeof(fmtdesc));
         fmtdesc.index = i;
-        fmtdesc.type  = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        fmtdesc.type  = m_nV4L2BufType;
         if(-1 == ioctl(m_nFileDescriptor, VIDIOC_ENUM_FMT, &fmtdesc))
         {
             break;
@@ -447,7 +451,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         //possible region of interest
         v4l2_cropcap cropcap;
         memset(&cropcap, 0, sizeof(cropcap));
-        cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        cropcap.type = m_nV4L2BufType;
         if (-1 == xioctl(m_nFileDescriptor, VIDIOC_CROPCAP, &cropcap))
         {
             throw CreateException("Cannot get crop capabilities from device");
@@ -456,7 +460,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         //Set cropping in the device with the given values
         v4l2_crop crop;
         memset(&crop, 0, sizeof(crop));
-        crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;		
+        crop.type = m_nV4L2BufType;		
         if (-1 == xioctl(m_nFileDescriptor, VIDIOC_G_CROP, &crop))
         {
             throw CreateException("Cannot get crop from device");
@@ -491,7 +495,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
   
         v4l2_crop crop_r;
         memset(&crop_r, 0, sizeof(crop_r));
-        crop_r.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;    
+        crop_r.type = m_nV4L2BufType;    
         int r = xioctl(m_nFileDescriptor, VIDIOC_G_CROP, &crop_r);
         
         int i=0;
@@ -521,7 +525,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
     //Get current format from the device
     v4l2_format fmt;
     memset(&fmt, 0, sizeof(fmt));
-    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    fmt.type = m_nV4L2BufType;
     if (-1 == xioctl(m_nFileDescriptor, VIDIOC_G_FMT, &fmt))
     {
         throw CreateException("Cannot get format from device");
@@ -538,7 +542,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
     
     //Read back and check the changes of the format
     memset(&fmt, 0, sizeof(fmt));
-    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    fmt.type = m_nV4L2BufType;
     if (-1 == xioctl(m_nFileDescriptor, VIDIOC_G_FMT, &fmt))
     {
         throw CreateException("Cannot get format from device");
@@ -547,6 +551,11 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
     if (fmt.fmt.pix.pixelformat != nPixelformat)
     {
         throw CreateException("Could not set pixel format");
+    }
+    
+    if(m_bMplaneApi)
+    {
+        m_nNumPlanes = fmt.fmt.pix_mp.num_planes;
     }
     
     //Request buffers from the device (either userptr or mmap)
@@ -568,7 +577,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
     v4l2_requestbuffers req;
     memset(&req, 0, sizeof(req));
     req.count = nBufferCount;
-    req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    req.type = m_nV4L2BufType;
     req.memory = ioMethod;
     if (-1 == xioctl(m_nFileDescriptor, VIDIOC_REQBUFS, &req))
     {
@@ -602,9 +611,16 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
             for(__u32 i = 0; i < req.count; i++)
             {
                 v4l2_buffer buf;
+                v4l2_plane planes[m_nNumPlanes];
                 memset(&buf, 0, sizeof(buf));
+                
+                if(m_bMplaneApi)
+                {
+                    buf.m.planes = planes;
+                    buf.length = m_nNumPlanes;
+                }
 
-                buf.type    = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                buf.type    = m_nV4L2BufType;
                 buf.memory  = V4L2_MEMORY_MMAP;
                 buf.index   = i;
 
@@ -615,6 +631,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
 
                 QSharedPointer<Buffer> pBuffer(new Buffer(  &buf,
                                                             m_nFileDescriptor,
+                                                            m_bMplaneApi,
                                                             i,
                                                             fmt.fmt.pix.width,
                                                             fmt.fmt.pix.height,
@@ -634,6 +651,7 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
             for(__u32 i = 0; i < req.count; i++)
             {
                 QSharedPointer<Buffer> pBuffer(new Buffer(  fmt.fmt.pix.sizeimage,
+                                                            m_bMplaneApi,
                                                             i,
                                                             fmt.fmt.pix.width,
                                                             fmt.fmt.pix.height,
@@ -662,11 +680,11 @@ void Camera::InitDevice(IOMethod eIOMethod, uint32_t nBufferCount, const std::se
         v4l2_requestbuffers req;
         memset(&req, 0, sizeof(req));
         req.count = 0;
-        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        req.type = m_nV4L2BufType;
         req.memory = ioMethod;
         if(-1 == xioctl(m_nFileDescriptor, VIDIOC_REQBUFS, &req))
         {
-            std::cerr << CreateError("Cannot request buffers") << "\n";
+            std::cerr << CreateError("Cannot request buffers s") << "\n";
         }
     
         throw;
@@ -703,7 +721,7 @@ void Camera::UninitDevice()
         v4l2_requestbuffers req;
         memset(&req, 0, sizeof(req));
         req.count = 0; //Using 0 here tells the driver to free buffers
-        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        req.type = m_nV4L2BufType;
         req.memory = ioMethod;
         if (-1 == xioctl(m_nFileDescriptor, VIDIOC_REQBUFS, &req))
         {
@@ -773,8 +791,16 @@ void Camera::run()
                         //First dequeue buffer for mmap
                         v4l2_buffer buf;
                         memset(&buf, 0, sizeof(buf));
-                        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                        buf.type = m_nV4L2BufType;
                         buf.memory = V4L2_MEMORY_MMAP;
+                        
+                        v4l2_plane planes[m_nNumPlanes];
+                        if(m_bMplaneApi)
+                        {
+                            buf.m.planes = planes;
+                            buf.length = m_nNumPlanes;
+                        }                        
+                        
                         if(-1 == xioctl(m_nFileDescriptor, VIDIOC_DQBUF, &buf))
                         {
                             if (EAGAIN != errno)
@@ -805,8 +831,16 @@ void Camera::run()
                         //First dequeue buffer for userptr
                         v4l2_buffer buf;
                         memset(&buf, 0, sizeof(buf));
-                        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                        buf.type = m_nV4L2BufType;
                         buf.memory = V4L2_MEMORY_USERPTR;
+                        
+                        v4l2_plane planes[m_nNumPlanes];
+                        if(m_bMplaneApi)
+                        {
+                            buf.m.planes = planes;
+                            buf.length = m_nNumPlanes;
+                        }
+                        
                         if (0 == xioctl(m_nFileDescriptor, VIDIOC_DQBUF, &buf))
                         {
                             //If we were able to dequeue a buffer we try to find the according buffer object
@@ -842,8 +876,15 @@ void Camera::run()
                     {
                         v4l2_buffer buf;
                         memset(&buf, 0, sizeof(buf));
-                        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                        buf.type = m_nV4L2BufType;
                         buf.index = m_pNextBuffer->GetIndex();
+                        
+                        v4l2_plane planes[m_nNumPlanes];
+                        if(m_bMplaneApi)
+                        {
+                            buf.m.planes = planes;
+                            buf.length = m_nNumPlanes;
+                        }
 
                         switch(m_eIOMethod)
                         {
@@ -942,7 +983,7 @@ void Camera::run()
     m_pNextBuffer.clear();
     m_pUsedBuffer.clear();
     
-    v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    v4l2_buf_type type = m_bMplaneApi ? V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE : V4L2_BUF_TYPE_VIDEO_CAPTURE;
     if(-1 == xioctl(m_nFileDescriptor, VIDIOC_STREAMOFF, &type))
     {
         std::cerr << CreateError("Could not stop streaming") << "\n";
@@ -995,11 +1036,20 @@ void Camera::StartStreaming()
                 
                 v4l2_buffer buf;
                 memset(&buf, 0, sizeof(buf));
-                buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                buf.type = m_nV4L2BufType;
                 buf.memory = V4L2_MEMORY_MMAP;
                 buf.index = pBuffer->GetIndex();
+                
+                v4l2_plane planes[m_nNumPlanes];
+                if(m_bMplaneApi)
+                {
+                    buf.m.planes = planes;
+                    buf.length = m_nNumPlanes;
+                }                        
+                
                 if (-1 == xioctl(m_nFileDescriptor, VIDIOC_QBUF, &buf))
                 {
+                    std::cout << " StartStreaming Errorrr" << std::endl;
                     throw CreateException("Could not queue buffer");
                 }
             }
@@ -1018,11 +1068,19 @@ void Camera::StartStreaming()
                 
                 v4l2_buffer buf;
                 memset(&buf, 0, sizeof(buf));
-                buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                buf.type = m_nV4L2BufType;
                 buf.memory = V4L2_MEMORY_USERPTR;
                 buf.index = (__u32)pBuffer->GetIndex();
                 buf.m.userptr = (unsigned long)pBuffer->GetData();
                 buf.length = (__u32)pBuffer->GetSize();
+                
+                v4l2_plane planes[m_nNumPlanes];
+                if(m_bMplaneApi)
+                {
+                    buf.m.planes = planes;
+                    buf.length = m_nNumPlanes;
+                }
+                
                 if(-1 == xioctl(m_nFileDescriptor, VIDIOC_QBUF, &buf))
                 {
                     throw CreateException("Could not queue buffer");
@@ -1035,7 +1093,7 @@ void Camera::StartStreaming()
         }
         
         //Finally start capturing in the device
-        v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        v4l2_buf_type type = m_bMplaneApi ? V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE : V4L2_BUF_TYPE_VIDEO_CAPTURE;
         if(-1 == xioctl(m_nFileDescriptor, VIDIOC_STREAMON, &type))
         {
             throw CreateException("Could not start streaming");
@@ -1117,8 +1175,15 @@ QSharedPointer<Buffer> Camera::GetNewBuffer()
         {
             v4l2_buffer buf;
             memset(&buf, 0, sizeof(buf));
-            buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            buf.type = m_nV4L2BufType;
             buf.index = m_pUsedBuffer->GetIndex();
+            
+            v4l2_plane planes[m_nNumPlanes];
+            if(m_bMplaneApi)
+            {
+                buf.m.planes = planes;
+                buf.length = m_nNumPlanes;
+            }    
 
             switch(m_eIOMethod)
             {
