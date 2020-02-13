@@ -1060,8 +1060,14 @@ void Camera::StartStreaming()
                 
                 if (-1 == xioctl(m_nFileDescriptor, VIDIOC_QBUF, &buf))
                 {
-                    std::cout << " StartStreaming Errorrr" << std::endl;
-                    throw CreateException("Could not queue buffer");
+                    if(EINVAL == errno)
+                    {
+                        throw CreateException("Buffer type MMAP not supported by device driver. Please try USERPTR.\n");
+                    }
+                    else
+                    {
+                        throw CreateException("Could not queue buffer");
+                    }
                 }
             }
             break;
@@ -1094,7 +1100,14 @@ void Camera::StartStreaming()
                 
                 if(-1 == xioctl(m_nFileDescriptor, VIDIOC_QBUF, &buf))
                 {
-                    throw CreateException("Could not queue buffer");
+                    if(EINVAL == errno)
+                    {
+                        throw CreateException("Buffer type USERPTR not supported by device driver. Please try MMAP.\n");
+                    }
+                    else
+                    {
+                        throw CreateException("Could not queue buffer");
+                    }
                 }
             }
             break;
