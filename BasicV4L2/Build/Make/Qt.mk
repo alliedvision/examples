@@ -9,22 +9,22 @@ UIC           		= $(if $(PKGCFG_UIC),$(PKGCFG_UIC),uic)
 RCC             	= rcc
 
 #Compile options needed for QtCore
-QTCORE_CFLAGS       = $(shell $(PKGCFG) --cflags Qt5Widgets)
+QTCORE_CFLAGS       = $(shell $(PKGCFG) --cflags QtCore)
 
 #Linker options needed for QtCore
-QTCORE_LIBS         = $(shell $(PKGCFG) --libs Qt5Widgets)
+QTCORE_LIBS         = $(shell $(PKGCFG) --libs QtCore)
 
 #Compile options needed for QtGui
-QTGUI_CFLAGS        = $(shell $(PKGCFG) --cflags Qt5Gui)
+QTGUI_CFLAGS        = $(shell $(PKGCFG) --cflags QtGui)
 
 #Linker options needed for QtGui
-QTGUI_LIBS          = $(shell $(PKGCFG) --libs Qt5Gui)
+QTGUI_LIBS          = $(shell $(PKGCFG) --libs QtGui)
 
 #Compile options needed for QtSvg
-QTSVG_CFLAGS        = $(shell $(PKGCFG) --cflags Qt5Svg)
+QTSVG_CFLAGS        = $(shell $(PKGCFG) --cflags QtSvg)
 
 #Linker options needed for QtSvg
-QTSVG_LIBS          = $(shell $(PKGCFG) --libs Qt5Svg)
+QTSVG_LIBS          = $(shell $(PKGCFG) --libs QtSvg)
 
 #Operations we have to do in order to prepare QtCore
 QtCore:
