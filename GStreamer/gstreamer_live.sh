@@ -13,6 +13,7 @@ PIPELINE="echo -e \"Pipeline not defined.\""
 NITROGEN=nitrogen
 NVIDIA=nvidia
 WANDBOARD=wandboard
+APALIS_IMX8=apalis_imx8
 # ========================================================= 
 # Usage function
 # ========================================================= 
@@ -79,10 +80,14 @@ if [ "$BOARD" = 0 ]; then
     exit 1
 fi
 
-if ! [[ "$BOARD" =~ ^($NITROGEN|$NVIDIA|$WANDBOARD)$ ]]; then
+if ! [[ "$BOARD" =~ ^($NITROGEN|$NVIDIA|$WANDBOARD|$APALIS_IMX8)$ ]]; then
     echo -e "Unsupported board specified. Exit.\n"
     usage
     exit 1
+fi
+
+if [ "$BOARD" = "$APALIS_IMX8" ]; then
+    VIDEOSINK=waylandsink
 fi
 
 echo "Using device" $DEVICE
@@ -91,7 +96,7 @@ echo "Using board" $BOARD
 if [ "$BOARD" = "$NVIDIA" ]; then
     PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! video/x-raw, format=BGRx ! $VIDEOSINK"
 else
-    PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! videoscale ! videoconvert ! video/x-raw,width=500,height=375,format=RGB ! videoconvert ! $VIDEOSINK"
+    PIPELINE="gst-launch-1.0 $VIDEOSRC device=$DEVICE ! $VIDEOSINK"
 fi
 
 eval "$PIPELINE"
