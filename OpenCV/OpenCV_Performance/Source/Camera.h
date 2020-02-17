@@ -3,7 +3,7 @@
 
 -------------------------------------------------------------------------------
 
-  File:        MainWindow.cpp
+  File:        Camera.h
 
   Description: The Basic V4L2 Demo will demonstrate how to open and initialize
                a V4L2 device and how to acquire and display images from it.
@@ -59,6 +59,7 @@ private:
     char        *m_pData;
     size_t      m_nSize;
     IOMethod    m_eIOMethod;
+    bool        m_bMplaneApi;
     __u32       m_nIndex;
     __u32       m_nWidth;
     __u32       m_nHeight;
@@ -66,8 +67,8 @@ private:
     __u32       m_nPixelFormat;
     
 public:
-    Buffer(v4l2_buffer *pBuffer, int nFileDescriptor, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nBytesPerLine, __u32 nPixelFormat);
-    Buffer(size_t nSize, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nBytesPerLine, __u32 nPixelFormat);
+    Buffer(v4l2_buffer *pBuffer, int nFileDescriptor, bool mplaneApi, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nBytesPerLine, __u32 nPixelFormat);
+    Buffer(size_t nSize, bool mplaneApi, __u32 nIndex, __u32 nWidth, __u32 nHeight, __u32 nBytesPerLine, __u32 nPixelFormat);
     ~Buffer();
     
     void* GetData() const;
@@ -94,6 +95,9 @@ private:
     };
     int                                         m_nFileDescriptor;
     bool                                        m_bInitialized;
+    bool                                        m_bMplaneApi;
+    __u32                                       m_nV4L2BufType;
+    __u8                                        m_nNumPlanes;
     IOMethod                                    m_eIOMethod;
     std::map<__u32, QSharedPointer<Buffer> >    m_BuffersByIndex;
     std::map<void*, QSharedPointer<Buffer> >    m_BuffersByPtr;
