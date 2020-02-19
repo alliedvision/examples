@@ -26,6 +26,7 @@ usage() {
     echo -e "                   $NITROGEN  for Nitrogen  boards"
     echo -e "                   $NVIDIA    for NVIDIA    boards"
     echo -e "                   $WANDBOARD for Wandboard boards"
+    echo -e "                   $APALIS_IMX8 for Apalis iMX8 boards"
     echo -e "-d, --device   Device to use. e.g. -d /dev/video3"
 	echo -e "-h, --help     Display help"
 }
