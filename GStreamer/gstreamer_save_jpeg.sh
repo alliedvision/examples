@@ -13,6 +13,7 @@ PIPELINE="echo -e \"Pipeline not defined.\""
 NITROGEN=nitrogen
 NVIDIA=nvidia
 WANDBOARD=wandboard
+APALIS_IMX8=apalis_imx8
 
 # ========================================================= 
 # Usage function
@@ -27,6 +28,7 @@ usage() {
     echo -e "                   $NITROGEN  for Nitrogen  boards"
     echo -e "                   $NVIDIA    for NVIDIA    boards"
     echo -e "                   $WANDBOARD for Wandboard boards"
+    echo -e "                   $APALIS_IMX8 for Apalis iMX8 boards"
 	echo -e "-d, --device   Device to use, e.g. -d /dev/video3"
 	echo -e "-h             Display help"
 	echo -e "-o, --output   Output filepath. e.g. -o out.jpeg"
@@ -93,7 +95,7 @@ if [ "$BOARD" = 0 ]; then
     exit 1
 fi
 
-if ! [[ "$BOARD" =~ ^($NITROGEN|$NVIDIA|$WANDBOARD)$ ]]; then
+if ! [[ "$BOARD" =~ ^($NITROGEN|$NVIDIA|$APALIS_IMX8|$WANDBOARD)$ ]]; then
     echo -e "Unsupported board specified. Exit.\n"
     usage
     exit 1
