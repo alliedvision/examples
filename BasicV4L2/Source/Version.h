@@ -32,12 +32,12 @@
 
 //Defines for naming and versioning of the application
 #define APPLICATION_VERSION_MAJOR   1
-#define APPLICATION_VERSION_MINOR   0
+#define APPLICATION_VERSION_MINOR   1
 #define APPLICATION_VERSION_PATCH   0
 #define APPLICATION_VERSION         (TOSTRING(APPLICATION_VERSION_MAJOR) "." TOSTRING(APPLICATION_VERSION_MINOR) "." TOSTRING(APPLICATION_VERSION_PATCH))
 #define APPLICATION_PRODUCT_NAME    "Basic V4L2 Demo"
 #define APPLICATION_FILE_NAME       "BasicDemo"
-#define APPLICATION_COPYRIGHT       "(c) Allied Vision Technologies 2017"
+#define APPLICATION_COPYRIGHT       "(c) Allied Vision Technologies 2017-2020"
 
 
 #endif //VERSION_H 
