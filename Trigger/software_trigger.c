@@ -113,7 +113,7 @@ int main( int const argc, char const **argv )
         }
 
         // Don't pre-trigger too fast
-        usleep( 20000 );
+        usleep( 400000 );
     }
 
     // Wait for user to request a software trigger

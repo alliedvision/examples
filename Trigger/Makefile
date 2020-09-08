@@ -1,4 +1,4 @@
-CFLAGS = -O2 -Wall -Wextra -pedantic
+CFLAGS ?= -O2 -Wall -Wextra -pedantic
 EXAMPLES = software_trigger hardware_trigger
 
 all: $(EXAMPLES)
