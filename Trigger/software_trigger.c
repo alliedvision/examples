@@ -104,18 +104,6 @@ int main( int const argc, char const **argv )
         exitError( "VIDIOC_STREAMON" );
     }
 
-    // Pre-trigger frames (NVidia VI driver limiation workaround)
-    for( unsigned i = 0; i < reqBufs.count; i++ )
-    {
-        if( ioctl( cameraFd, VIDIOC_TRIGGER_SOFTWARE ) == -1 )
-        {
-            exitError( "VIDIOC_TRIGGER_SOFTWARE" );
-        }
-
-        // Don't pre-trigger too fast
-        usleep( 400000 );
-    }
-
     // Wait for user to request a software trigger
     printf( "start trigger with [enter]" );
     fflush( stdout );

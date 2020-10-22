@@ -117,11 +117,6 @@ int main( int const argc, char const **argv )
         exitError( "VIDIOC_STREAMON" );
     }
 
-    // Pre-trigger frames (NVidia VI driver limiation workaround)
-    // We can't do this automatically, so ask the user to do it
-    printf( "Pre-triggering required to fill the queue. Please trigger %u"
-            "times before continuing\n", reqBufs.count );
-
     // Wait for trigger and dequeue triggered buffer
     struct v4l2_buffer buf = {
         .type = V4L2_BUF_TYPE_VIDEO_CAPTURE,
