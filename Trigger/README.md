@@ -32,7 +32,7 @@ To access the GPIOs, see the user guide for your adapter board, section I/O conn
 https://www.alliedvision.com/en/support/technical-documentation/accessory-documentation.html
 
 ## Exposure Active signals
-As of camera firmware version 00.04.00.34658, Exposure Active signals are supported. The Jetson driver will support Exposure Active signals as of version 2.0.
+As of camera firmware version 00.04.00.34658, Exposure Active signals are supported. The Jetson driver supports Exposure Active signals as of version 2.0.
 
 ## Troubleshooting
 
