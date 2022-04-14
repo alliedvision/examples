@@ -23,9 +23,6 @@ version:     1.7.10
 ////////////////////////////////////////////////////////////////////////////////
 // DEFINES
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef __AVT_CSI2_IOCTL_H
-#define __AVT_CSI2_IOCTL_H
-
 #ifndef LIBCSI_IOCTL_H
 #define LIBCSI_IOCTL_H
 
@@ -45,27 +42,6 @@ version:     1.7.10
 /* Driver capabilities flags. See v4l2_csi_driver_info */
 #define AVT_DRVCAP_USRPTR                   0x00000001  
 #define AVT_DRVCAP_MMAP                     0x00000002
-
-/* D-PHY 1.2 clock frequency range (up to 2.5 Gbps per lane, DDR) */
-#define CSI_HOST_CLK_MIN_FREQ	40000000
-#define CSI_HOST_CLK_MAX_FREQ	1250000000
-
-/* IPU restrictions */
-#define FRAMESIZE_MIN_W 32
-#define FRAMESIZE_MIN_H 16
-#define FRAMESIZE_MAX_W 4096
-#define FRAMESIZE_MAX_H 4096
-#define FRAMESIZE_INC_W 16
-#define FRAMESIZE_INC_H 1
-
-/* Support only 0x31 datatype */
-# define DATA_IDENTIFIER_INQ_1 0x0002000000000000ull
-# define DATA_IDENTIFIER_INQ_2 0x0
-# define DATA_IDENTIFIER_INQ_3 0x0
-# define DATA_IDENTIFIER_INQ_4 0x0
-
-#define MIN_ANNOUNCED_FRAMES 3
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // ENUMS
@@ -147,11 +123,11 @@ enum v4l2_triggeractivation
 
 enum v4l2_triggersource
 {
-    V4L2_TRIGGER_SOURCE_SOFTWARE = 0,
-    V4L2_TRIGGER_SOURCE_LINE0    = 1,
-    V4L2_TRIGGER_SOURCE_LINE1    = 2,
-    V4L2_TRIGGER_SOURCE_LINE2    = 3,
-    V4L2_TRIGGER_SOURCE_LINE3    = 4,
+    V4L2_TRIGGER_SOURCE_LINE0    = 0,
+    V4L2_TRIGGER_SOURCE_LINE1    = 1,
+    V4L2_TRIGGER_SOURCE_LINE2    = 2,
+    V4L2_TRIGGER_SOURCE_LINE3    = 3,
+    V4L2_TRIGGER_SOURCE_SOFTWARE = 4
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,8 +138,8 @@ struct v4l2_i2c
     __u32       register_address;       // Register
     __u32       timeout;                // Timeout value
     const char* ptr_buffer;             // I/O buffer
-    __u32       register_size;          // Register size
-    __u32       num_bytes;              // Bytes to read
+    __u32       register_size;          // Register address size (should be 2 for AVT Alvium 1500 and 1800)
+    __u32       num_bytes;              // Bytes to read or write
 };
 
 struct v4l2_dma_mem
@@ -348,27 +324,19 @@ struct v4l2_trigger_rate
 /* Set CSI configuration */
 #define VIDIOC_S_CSI_CONFIG                 _IOWR('V', BASE_VIDIOC_PRIVATE + 19, struct v4l2_csi_config)
 
-/* Set the Trigger mode to OFF */
-#define VIDIOC_TRIGGER_MODE_OFF             _IO('V', BASE_VIDIOC_PRIVATE + 20)
+/* Trigger mode to ON/OFF */
+#define V4L2_CID_TRIGGER_MODE                   (V4L2_CID_CAMERA_CLASS_BASE+47)
 
-/* Set the Trigger mode to ON */
-#define VIDIOC_TRIGGER_MODE_ON              _IO('V', BASE_VIDIOC_PRIVATE + 21)
+/* trigger activation: edge_rising, edge_falling, edge_any, level_high, level_low */
+#define V4L2_CID_TRIGGER_ACTIVATION             (V4L2_CID_CAMERA_CLASS_BASE+48)
 
-/* Set the trigger activation */
-#define VIDIOC_S_TRIGGER_ACTIVATION         _IOW('V', BASE_VIDIOC_PRIVATE + 22, int)
-
-/* Get the trigger activation */
-#define VIDIOC_G_TRIGGER_ACTIVATION         _IOR('V', BASE_VIDIOC_PRIVATE + 23, int)
-
-/* Set the trigger source */
-#define VIDIOC_S_TRIGGER_SOURCE             _IOW('V', BASE_VIDIOC_PRIVATE + 24, int)
-
-/* Get the trigger source */
-#define VIDIOC_G_TRIGGER_SOURCE             _IOR('V', BASE_VIDIOC_PRIVATE + 25, int)
+/* trigger source: software, gpio0, gpio1 */
+#define V4L2_CID_TRIGGER_SOURCE                 (V4L2_CID_CAMERA_CLASS_BASE+49)
 
 /* Execute a software trigger */
-#define VIDIOC_TRIGGER_SOFTWARE             _IO('V', BASE_VIDIOC_PRIVATE + 26)
+#define V4L2_CID_TRIGGER_SOFTWARE               (V4L2_CID_CAMERA_CLASS_BASE+50)
 
+/* Camera temperature readout */
+#define V4L2_CID_DEVICE_TEMPERATURE             (V4L2_CID_CAMERA_CLASS_BASE+51)
 
-#endif  /* __AVT_CSI2_IOCTL_H */
 #endif /* LIBCSI_IOCTL_H */

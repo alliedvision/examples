@@ -85,15 +85,16 @@ int main( int const argc, char const **argv )
     }
 
     // Set trigger mode
-    if( ioctl( cameraFd, VIDIOC_TRIGGER_MODE_ON ) == -1 )
+    struct v4l2_control enable_trigger = {.id= V4L2_CID_TRIGGER_MODE, .value=1};
+    if( ioctl(cameraFd, VIDIOC_S_CTRL, &enable_trigger) == -1 )
     {
         exitError( "enabling trigger mode" );
     }
 
     // Set trigger source
     int const source = V4L2_TRIGGER_SOURCE_LINE0;
-    // int const source = V4L2_TRIGGER_SOURCE_LINE1;
-    if( ioctl( cameraFd, VIDIOC_S_TRIGGER_SOURCE, &source ) == -1 )
+    struct v4l2_control set_trigger_source = {.id=V4L2_CID_TRIGGER_SOURCE, .value=source};
+    if( ioctl(cameraFd, VIDIOC_S_CTRL, &set_trigger_source) == -1 )
     {
         exitError( "setting trigger source" );
     }
@@ -104,7 +105,8 @@ int main( int const argc, char const **argv )
     // int const activation = V4L2_TRIGGER_ACTIVATION_ANY_EDGE;
     // int const activation = V4L2_TRIGGER_ACTIVATION_LEVEL_HIGH;
     // int const activation = V4L2_TRIGGER_ACTIVATION_LEVEL_LOW;
-    if( ioctl( cameraFd, VIDIOC_S_TRIGGER_ACTIVATION, &activation ) == -1 )
+    struct v4l2_control set_trigger_activation = {.id=V4L2_CID_TRIGGER_ACTIVATION, .value=activation};
+    if( ioctl(cameraFd, VIDIOC_S_CTRL, &set_trigger_activation) == -1 )
     {
         exitError( "setting trigger activation" );
     }
