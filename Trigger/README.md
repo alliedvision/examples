@@ -6,9 +6,10 @@ V4L2 doesn’t provide controls for triggering like in GenICam. To enable hardwa
 ## Supported driver and camera firmware
 ### Supported driver
 https://github.com/alliedvision/linux_nvidia_jetson   
-Please make sure using version 1.1.0 or higher with JetPack version 4.4 (L4T 32.4.2) or higher.   
+You can use this example version with Jetson driver version 3.0 or higher and JetPack 4.5.1 (L4T 32.5.1) or higher.   
+
 ### Supported camera firmware
-Triggering is supported by firmware version 00.03.00.31919 or higher. To obtain the latest firmware for your Allied Vision MIPI CSI-2 camera, please contact our technical support team:
+Please use firmware version 00.08.00.6727174b or higher. To obtain the latest firmware for your Allied Vision MIPI CSI-2 camera, please contact our technical support team:
 https://www.alliedvision.com/en/support/contact-support-and-repair.html
 
 ## Available I/O controls
@@ -32,11 +33,11 @@ To access the GPIOs, see the user guide for your adapter board, section I/O conn
 https://www.alliedvision.com/en/support/technical-documentation/accessory-documentation.html
 
 ## Exposure Active signals
-As of camera firmware version 00.04.00.34658, Exposure Active signals are supported. The Jetson driver supports Exposure Active signals as of version 2.0.
+The Jetson driver supports Exposure Active signals.
 
 ## Troubleshooting
 
-* Make sure the firmware and driver support triggering, see above.
+* For supported camera firmware and JetPack versions, see above.
 
 * Aborting VIDIOC_DQBUF during triggered acquisition:   
    VIDIOC_DQBUF blocks uninterruptably in kernel mode. Killing is not possible because the signal cannot be delivered while blocked in kernel mode.   
