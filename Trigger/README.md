@@ -39,12 +39,12 @@ The Jetson driver supports Exposure Active signals.
 
 * For supported camera firmware and JetPack versions, see above.
 
-* Aborting  V4L2_CID_TRIGGER_SOFTWARE during triggered acquisition:   
-  V4L2_CID_TRIGGER_SOFTWARE blocks uninterruptably in kernel mode. Killing is not possible because the signal cannot be delivered while blocked in kernel mode.   
+* Aborting  VIDIOC_DQBUF during triggered acquisition:   
+  VIDIOC_DQBUF blocks uninterruptably in kernel mode. Killing is not possible because the signal cannot be delivered while blocked in kernel mode.   
    Workaround:   
    Execute a trigger command to make DQBUF receive a frame and return.
    You can change the trigger configuration while waiting in DQBUF.
-   When blocked on hardware trigger DQBUF: Change the trigger source to software in a second thread and generate a trigger event with VIDIOC_TRIGGER_SOFTWARE.
+   When blocked on hardware trigger DQBUF: Change the trigger source to software in a second thread and generate a trigger event with V4L2_CID_TRIGGER_SOFTWARE.
 
  ## More information about triggering
  This Readme is intended to ease using the examples. For detailed information about triggering, see the latest user guide for your Alvium CSI-2 camera:   
