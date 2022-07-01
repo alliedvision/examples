@@ -1,4 +1,4 @@
-#include "libcsi_ioctl.h"
+#include "alvium_trigger.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/videodev2.h>
