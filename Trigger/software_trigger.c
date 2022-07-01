@@ -114,7 +114,7 @@ int main( int const argc, char const **argv )
     struct v4l2_control trigger_software = {.id=V4L2_CID_TRIGGER_SOFTWARE};
     if( ioctl(cameraFd, VIDIOC_S_CTRL, &trigger_software) == -1 )
     {
-        exitError( "VIDIOC_TRIGGER_SOFTWARE" );
+        exitError( "V4L2_CID_TRIGGER_SOFTWARE" );
     }
 
     // Dequeue triggered buffer
