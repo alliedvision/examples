@@ -105,6 +105,9 @@ int main(int const argc, char const **argv) {
 
         // Wait for frame and dequeue associated buffer
         if(ioctl(cameraFd, VIDIOC_DQBUF, &buf ) == -1) {
+            if(errno == EINTR) {
+                break;
+            }
             exitError("VIDIOC_DQBUF");
         }
 
@@ -115,6 +118,9 @@ int main(int const argc, char const **argv) {
 
         // Re-queue frame after we're done with it
         if(ioctl(cameraFd, VIDIOC_QBUF, &buf) == -1) {
+            if(errno == EINTR) {
+                break;
+            }
             exitError("VIDIOC_QBUF");
         }
     }
