@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <fcntl.h>
+#include <sched.h>
 #include <linux/videodev2.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,8 @@ static void exitError(const char *s) {
 }
 
 static bool keepStreaming = true;
-static void sigint(int) {
+static void sigint(int _) {
+    (void)_;
     keepStreaming = false;
 }
 
