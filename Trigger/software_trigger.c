@@ -20,8 +20,18 @@ static void exitError( const char *s )
 static void usage(const char *name)
 {
     fprintf( stderr, "usage: %s [-s <subdevice> ] <device>\n",name);
-        exit( 1 );
+    exit( 1 );
+}
+
+static __u32 get_bytesused(const struct v4l2_buffer * const buf)
+{
+    if (buf->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)
+    {
+        return buf->m.planes[0].bytesused;
     }
+
+    return buf->bytesused;
+}
 
 int main( int const argc, char const **argv )
 {
@@ -224,7 +234,7 @@ int main( int const argc, char const **argv )
         exitError( "open output file" );
     }
 
-    if( write( outputFd, pBuffers[buf.index], buf.bytesused ) == -1 )
+    if( write( outputFd, pBuffers[buf.index], get_bytesused(&buf) ) == -1 )
     {
         exitError( "writing frame to file" );
     }
