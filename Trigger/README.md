@@ -5,11 +5,11 @@ V4L2 doesn’t provide controls for triggering like in GenICam. To enable hardwa
 
 ## Supported driver and camera firmware
 ### Supported driver
-https://github.com/alliedvision/linux_nvidia_jetson   
-You can use this example version with Jetson driver version 4.0.0 or higher and JetPack 4.6.1 (L4T 32.7.1) or higher.   
+https://github.com/alliedvision/alvium-jetson-driver-release
+You can use this example version with Jetson driver version r36.4.3-avt1.0 for Jetpack 6.2,
 
 ### Supported camera firmware
-Please use firmware version 00.08.00.6727174b or higher. To obtain the latest firmware for your Allied Vision MIPI CSI-2 camera, please contact our technical support team:
+Please use firmware version 13 or higher. To obtain the latest firmware for your Allied Vision MIPI CSI-2 camera, please contact our technical support team:
 https://www.alliedvision.com/en/support/contact-support-and-repair.html
 
 ## Available V4L2 controls
@@ -26,7 +26,6 @@ Trigger delay is currently not supported.
 The NVIDIA Jetson boards have several limitations that impact triggering:
 * NVIDIA's video input (VI) unit drivers are optimized to maximize troughput. When working with single frames, this behaviour may result in a higher latency.
 
-* Triggered frames always remain in the queue until all positions in the queue are filled with a frame. For example, it takes three triggers to receive the first triggered image if the driver uses three frame buffers.
 
 ## Hardware triggering
 To access the GPIOs, see the user guide for your adapter board, section I/O connections.   

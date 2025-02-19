@@ -70,4 +70,10 @@ struct v4l2_trigger_rate
 /* Camera temperature readout */
 #define V4L2_CID_DEVICE_TEMPERATURE             (V4L2_CID_CAMERA_CLASS_BASE+51)
 
+// NVIDIA Tegra controls
+
+#define TEGRA_CAMERA_CID_BASE	(V4L2_CTRL_CLASS_CAMERA | 0x2000)
+
+#define TEGRA_CAMERA_CID_VI_CAPTURE_TIMEOUT (TEGRA_CAMERA_CID_BASE+111)
+
 #endif

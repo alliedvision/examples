@@ -33,6 +33,16 @@ static __u32 get_bytesused(const struct v4l2_buffer * const buf)
     return buf->bytesused;
 }
 
+static void set_timeout(int fd)
+{
+    struct v4l2_control ctrl;
+    ctrl.id = TEGRA_CAMERA_CID_VI_CAPTURE_TIMEOUT;
+    ctrl.value = -1;
+
+    ioctl(fd, VIDIOC_S_CTRL, &ctrl);
+
+}
+
 int main( int const argc, char const **argv )
 {
     int opt;
@@ -93,6 +103,8 @@ int main( int const argc, char const **argv )
     {
         exitError( "Buffer type not supported" );
     }
+
+    set_timeout(cameraFd);
 
     // Request one buffer. Note: Some boards like the NVidia Jetson Nano return a minimum number
     // of frames. To work correctly, all frames need to be queued later.
